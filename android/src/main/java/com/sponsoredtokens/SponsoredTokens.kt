@@ -69,7 +69,7 @@ public enum class AuthMode {
  *
  * ── THE TWO ROADS ───────────────────────────────────────────────────────────────────────────────
  *
- * `/api/v1/*` - the money - goes by [authMode]. `/api/people/*` - who you are, what you have left,
+ * `/api/v1/...` - the money - goes by [authMode]. `/api/people/...` - who you are, what you have left,
  * signing out - always goes by the person token, because those doors are the PERSON'S and a
  * signature identifies the app's device. That split is deliberate and is the only rule about which
  * credential goes where.
