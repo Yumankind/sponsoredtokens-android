@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  THE ONE PERMISSION, declared here so that an app adding this library does not have to be told to
+  add it. It calls exactly one host and needs nothing else: no location, no account, no storage, no
+  identifier. A `queries` entry is not needed either, because a Custom Tab is launched with an
+  implicit VIEW intent that the platform resolves without package visibility.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
