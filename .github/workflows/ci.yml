@@ -1,0 +1,120 @@
+# THE PUBLIC REPOSITORY IS THE PROOF.
+#
+# This library was written on a machine with NO JDK, NO GRADLE AND NO ANDROID SDK: not one line of it
+# was compiled before it was pushed. That is stated plainly rather than hidden, and this workflow is
+# the answer to it - on every push and every pull request, a runner that does have all three compiles
+# the library, compiles the two optional adapters, compiles the sample app and runs the unit tests
+# that pin the canonical string, the DER conversion, the PKCE pair, the redirect parsing, the money
+# headers, the footer and the five second rule.
+#
+# ── WHY THERE IS NO `gradlew` IN THIS REPOSITORY ────────────────────────────────────────────────
+#
+# The Gradle wrapper is three files and one of them, `gradle-wrapper.jar`, is a binary. It could not
+# be written by the machine that wrote everything else, and a `gradlew` script whose jar is missing
+# is worse than no `gradlew` at all: it fails with a stack trace about a missing class rather than
+# with "there is no wrapper here". So the repository carries `gradle/wrapper/gradle-wrapper.properties`
+# - which is the file that PINS the version, and the only one with a decision in it - and the wrapper
+# is GENERATED, here and on JitPack, by the one command that can write that jar correctly:
+#
+#     gradle wrapper --gradle-version <the version in gradle-wrapper.properties>
+#
+# `gradle/actions/setup-gradle` provisions that exact Gradle, so the step below both creates the
+# wrapper and proves that the same two lines work for anybody cloning this repository.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # One place. `gradle/wrapper/gradle-wrapper.properties` carries the same number, and the check at
+  # the end of the first job fails if the two ever disagree.
+  GRADLE_VERSION: "8.11.1"
+
+jobs:
+  library:
+    name: Library, tests and sample
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Provision Gradle ${{ env.GRADLE_VERSION }}
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: The pinned version and the properties file agree
+        run: |
+          set -eu
+          pinned="$(sed -n 's/.*gradle-\([0-9.]*\)-bin\.zip.*/\1/p' gradle/wrapper/gradle-wrapper.properties)"
+          if [ "$pinned" != "${GRADLE_VERSION}" ]; then
+            echo "gradle-wrapper.properties pins $pinned, this workflow pins ${GRADLE_VERSION}" >&2
+            exit 1
+          fi
+          echo "both pin $pinned"
+
+      - name: Generate the wrapper, which is what JitPack does too
+        run: gradle wrapper --gradle-version "${GRADLE_VERSION}"
+
+      - name: Build the library and the Compose module
+        run: ./gradlew :android:assembleRelease :compose:assembleRelease --stacktrace
+
+      - name: Run the unit tests
+        run: ./gradlew :android:testDebugUnitTest --stacktrace
+
+      - name: Build the sample app
+        run: ./gradlew :samples:app:assembleDebug --stacktrace
+
+      - name: Prove the artifacts publish
+        run: ./gradlew :android:publishToMavenLocal :compose:publishToMavenLocal --stacktrace
+
+      - name: Keep the test report even when the tests failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: android/build/reports/tests/
+          if-no-files-found: ignore
+
+  integrations:
+    name: Optional adapters (advisory)
+    runs-on: ubuntu-latest
+    # ADVISORY ON PURPOSE. `:integrations` compiles against LangChain4j and the community OpenAI
+    # Kotlin client as `compileOnly` dependencies, so this job is the only thing in the repository
+    # that checks our calls against THEIR APIs. Those are third-party libraries on their own release
+    # cycles: a builder method renamed upstream should tell us, in one job, without turning the core
+    # library's result red for a module no consumer is obliged to add.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Provision Gradle ${{ env.GRADLE_VERSION }}
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build the adapters
+        run: gradle :integrations:assembleRelease --stacktrace
