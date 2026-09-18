@@ -1,0 +1,16 @@
+# HOW JITPACK BUILDS THIS, which is the same two lines the CI workflow runs and for the same reason:
+# there is no `gradlew` in the repository (see gradle/wrapper/gradle-wrapper.properties), so the
+# wrapper is generated before it is used.
+#
+# JitPack serves a multi-module repository under `com.github.<owner>.<repo>`, so the group is stated
+# here rather than taken from gradle.properties, whose `com.sponsoredtokens` is the coordinate this
+# library would publish under to Maven Central. The artifact ids are the module names.
+jdk:
+  - openjdk17
+
+install:
+  - gradle wrapper --gradle-version 8.11.1
+  - ./gradlew -Pgroup=com.github.Yumankind.sponsoredtokens-android -Pversion=$VERSION
+      :android:publishToMavenLocal
+      :compose:publishToMavenLocal
+      :integrations:publishToMavenLocal
