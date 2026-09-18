@@ -20,7 +20,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
-/** Which credential a call to `/api/v1/*` carries. */
+/** Which credential a call to `/api/v1/...` carries. */
 public enum class AuthMode {
     /**
      * Signed when the connect flow gave us a device, the bearer otherwise. The default.
@@ -426,7 +426,7 @@ public class SponsoredTokens @JvmOverloads constructor(
         JSONObject(execute(bare, builder.build()))
     }
 
-    /** A POST that carries whatever credential `/api/v1/*` is using. The beacon's road. */
+    /** A POST that carries whatever credential `/api/v1/...` is using. The beacon's road. */
     private suspend fun postSigned(path: String, body: JSONObject): JSONObject = withContext(Dispatchers.IO) {
         val request = Request.Builder()
             .url(siteUrl.newBuilder().encodedPath(path).build())
