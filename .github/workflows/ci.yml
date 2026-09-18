@@ -51,6 +51,10 @@ jobs:
 
       - name: Set up the Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The action's default asks for the retired `tools` package, which the SDK repository
+          # no longer serves; name the packages the build actually uses (compileSdk 35).
+          packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Provision Gradle ${{ env.GRADLE_VERSION }}
         uses: gradle/actions/setup-gradle@v4
@@ -110,6 +114,10 @@ jobs:
 
       - name: Set up the Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The action's default asks for the retired `tools` package, which the SDK repository
+          # no longer serves; name the packages the build actually uses (compileSdk 35).
+          packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Provision Gradle ${{ env.GRADLE_VERSION }}
         uses: gradle/actions/setup-gradle@v4
