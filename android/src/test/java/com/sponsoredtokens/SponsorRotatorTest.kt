@@ -20,7 +20,7 @@ class SponsorRotatorTest {
 
     private val acme = ShownSponsor(id = "sp_acme", name = "Acme", url = "https://acme.example", paid = true)
 
-    private fun pool(scheduler: () -> Long, ids: List<String> = listOf("sp_one", "sp_two")): Pair<Impressions, ArrayList<JSONObject>> {
+    private fun pool(ids: List<String> = listOf("sp_one", "sp_two"), scheduler: () -> Long): Pair<Impressions, ArrayList<JSONObject>> {
         val posted = ArrayList<JSONObject>()
         val impressions = Impressions(
             post = { _, body -> posted.add(body); JSONObject().put("accepted", 0).put("dropped", 0) },
@@ -156,7 +156,7 @@ class SponsorRotatorTest {
 
     @Test
     fun `the sponsor who paid is not shown again as one of the others`() = runTest {
-        val (impressions, posted) = pool({ testScheduler.currentTime }, ids = listOf("sp_acme", "sp_two"))
+        val (impressions, posted) = pool(ids = listOf("sp_acme", "sp_two")) { testScheduler.currentTime }
         val rotator = SponsorRotator(impressions)
         rotator.show(acme)
         rotator.start(backgroundScope)
@@ -169,7 +169,7 @@ class SponsorRotatorTest {
 
     @Test
     fun `an anonymous sponsor is shown and never beaconed, because there is nobody to report`() = runTest {
-        val (impressions, posted) = pool({ testScheduler.currentTime }, ids = emptyList())
+        val (impressions, posted) = pool(ids = emptyList()) { testScheduler.currentTime }
         val rotator = SponsorRotator(impressions)
         rotator.show(ShownSponsor(id = null, name = "an anonymous sponsor", paid = true))
         rotator.start(backgroundScope)

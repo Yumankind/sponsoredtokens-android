@@ -187,8 +187,10 @@ public class SponsoredTokens @JvmOverloads constructor(
     }
 
     /** The `Intent` an activity was launched or resumed with. `data` is the redirect. */
-    public suspend fun handleRedirect(intent: Intent): ConnectResult =
-        handleRedirect(intent.data?.toString() ?: return ConnectResult.Ignored)
+    public suspend fun handleRedirect(intent: Intent): ConnectResult {
+        val data = intent.data?.toString() ?: return ConnectResult.Ignored
+        return handleRedirect(data)
+    }
 
     public suspend fun handleRedirect(uri: Uri): ConnectResult = handleRedirect(uri.toString())
 

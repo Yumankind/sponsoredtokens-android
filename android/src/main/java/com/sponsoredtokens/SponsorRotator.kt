@@ -62,7 +62,7 @@ public data class ShownSponsor(
             val name = answer?.sponsorName ?: footer?.name ?: return null
             if (name.isEmpty()) return null
             return ShownSponsor(
-                id = answer?.sponsorId ?: footer?.sponsorId,
+                id = answer?.sponsorId ?: SponsoredAnswer.sponsorIdFromUrl(answer?.sponsorUrl) ?: footer?.sponsorId,
                 name = name,
                 url = answer?.sponsorUrl ?: footer?.url,
                 handle = answer?.sponsorHandle ?: footer?.handle,

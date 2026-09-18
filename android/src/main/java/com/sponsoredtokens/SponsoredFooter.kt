@@ -55,12 +55,13 @@ public object SponsoredFooter {
      * Anchored, because a model that echoes the line back in the middle of an answer is not the
      * pool's footer. The markdown link is one branch and a bare name the other, because a footer
      * without a URL is still a sponsor who paid. The handle group refuses to start with `$` so that
-     * `Name · $0.42` cannot read the amount as a handle and leave the cost null.
+     * `Name · $0.42` cannot read the amount as a handle and leave the cost null; the look-ahead sits
+     * before the optional whitespace, or a zero-width match of that whitespace would let it pass.
      */
     private val FOOTER = Regex(
         "\\n[ \\t]*\\n[ \\t]*(?:\u2014|\u2013|--)[ \\t]*(?:[Tt]ask[ \\t]+)?[Ss]ponsored by[ \\t]+" +
             "(?:\\[([^\\]\\n]+)\\]\\(([^)\\s]+)\\)|([^\\n\u00b7]+?))" +
-            "(?:[ \\t]*\u00b7[ \\t]*(?!\\$)([^\\n\u00b7]+?))?" +
+            "(?:[ \\t]*\u00b7(?![ \\t]*\\$)[ \\t]*([^\\n\u00b7]+?))?" +
             "(?:[ \\t]*\u00b7[ \\t]*(\\$[0-9][0-9,]*(?:\\.[0-9]+)?))?[ \\t]*$",
     )
 
